@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste FCM</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
+</head>
+<body>
+    <h1>Teste de Notificações FCM</h1>
+    <div id="token"></div>
+
+    <script>
+        // Configuração do Firebase (substitua com suas credenciais)
+        const firebaseConfig = {
+            apiKey: "sua-api-key",
+            authDomain: "seu-auth-domain",
+            projectId: "seu-project-id",
+            messagingSenderId: "seu-sender-id",
+            appId: "seu-app-id"
+        };
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Solicita permissão e obtém o token
+        const messaging = firebase.messaging();
+        
+        messaging.getToken({ vapidKey: 'sua-vapid-key' })
+            .then((currentToken) => {
+                if (currentToken) {
+                    console.log('Token FCM:', currentToken);
+                    document.getElementById('token').innerText = 'Token FCM: ' + currentToken;
+                    
+                    // Aqui você pode enviar o token para seu backend
+                    fetch('http://localhost:5000/api/notificacoes/token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer SEU_TOKEN_JWT'
+                        },
+                        body: JSON.stringify({
+                            token: currentToken,
+                            dispositivo: 'web'
+                        })
+                    });
+                } else {
+                    console.log('Nenhum token de registro disponível.');
+                }
+            })
+            .catch((err) => {
+                console.log('Erro ao obter token:', err);
+            });
+
+        // Manipula mensagens recebidas
+        messaging.onMessage((payload) => {
+            console.log('Mensagem recebida:', payload);
+            alert(payload.notification.title + '\n' + payload.notification.body);
+        });
+    </script>
+</body>
+</html> 
